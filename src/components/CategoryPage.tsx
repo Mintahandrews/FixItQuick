@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Filter } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import { categories } from '../data/categories';
 import { solutions } from '../data/solutions';
 import SolutionCard from './SolutionCard';

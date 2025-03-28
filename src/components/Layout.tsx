@@ -14,7 +14,7 @@ export default function Layout({ children }: LayoutProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAuthenticated, currentUser } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   // Close mobile menu when changing routes
   useEffect(() => {

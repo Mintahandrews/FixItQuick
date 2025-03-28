@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Bookmark, Clock, Shield } from 'lucide-react';
+import { Bookmark, Clock } from 'lucide-react';
 import { Solution } from '../types';
 import { useBookmarks } from '../hooks/useBookmarks';
 import DifficultyBadge from './DifficultyBadge';

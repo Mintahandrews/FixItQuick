@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ChevronLeft, CircleX, Filter, Search } from 'lucide-react';
+import { ChevronLeft, CircleX, Search } from 'lucide-react';
 import { useSearch } from '../hooks/useSearch';
 import SolutionCard from './SolutionCard';
 import FilterDropdown from './FilterDropdown';

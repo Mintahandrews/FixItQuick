@@ -11,8 +11,8 @@ import SuggestedSolution from './SuggestedSolution';
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [popularSolutions, setPopularSolutions] = useState(solutions.slice(0, 4));
-  const [featuredSolutions, setFeaturedSolutions] = useState(solutions.filter(s => s.difficulty === 'easy').slice(0, 2));
+  const [popularSolutions, _setPopularSolutions] = useState(solutions.slice(0, 4));
+  const [featuredSolutions, _setFeaturedSolutions] = useState(solutions.filter(s => s.difficulty === 'easy').slice(0, 2));
   const [suggestedSolutions, setSuggestedSolutions] = useState<typeof solutions>([]);
   const navigate = useNavigate();
   const { getRecentlyViewedSolutions } = useRecentlyViewed();
