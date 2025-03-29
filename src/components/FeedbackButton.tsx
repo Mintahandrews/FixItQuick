@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { CircleCheck, MessageSquare, ThumbsDown, ThumbsUp } from 'lucide-react';
-import { getStorageItem, setStorageItem, STORAGE_KEYS } from '../utils/localStorage';
 
 interface FeedbackButtonProps {
   solutionId: string;
@@ -8,24 +7,16 @@ interface FeedbackButtonProps {
 
 export default function FeedbackButton({ solutionId }: FeedbackButtonProps) {
   const [feedback, setFeedback] = useState<'helpful' | 'unhelpful' | null>(() => {
-    return getStorageItem<'helpful' | 'unhelpful' | null>(
-      STORAGE_KEYS.FEEDBACK(solutionId), 
-      null
-    );
+    const savedFeedback = localStorage.getItem(`feedback-${solutionId}`);
+    return savedFeedback as 'helpful' | 'unhelpful' | null;
   });
   const [showFeedbackMessage, setShowFeedbackMessage] = useState(false);
   const [showCommentForm, setShowCommentForm] = useState(false);
   const [comment, setComment] = useState('');
 
-  // Update localStorage when feedback changes
-  useEffect(() => {
-    if (feedback) {
-      setStorageItem(STORAGE_KEYS.FEEDBACK(solutionId), feedback);
-    }
-  }, [feedback, solutionId]);
-
   const handleFeedback = (type: 'helpful' | 'unhelpful') => {
     setFeedback(type);
+    localStorage.setItem(`feedback-${solutionId}`, type);
     
     if (type === 'unhelpful') {
       setShowCommentForm(true);
@@ -40,9 +31,9 @@ export default function FeedbackButton({ solutionId }: FeedbackButtonProps) {
     if (!comment.trim()) return;
     
     // Save comment to localStorage
-    const comments = getStorageItem<Record<string, string>>(STORAGE_KEYS.FEEDBACK_COMMENTS, {});
-    const updatedComments = { ...comments, [solutionId]: comment };
-    setStorageItem(STORAGE_KEYS.FEEDBACK_COMMENTS, updatedComments);
+    const comments = JSON.parse(localStorage.getItem(`feedback-comments`) || '{}');
+    comments[solutionId] = comment;
+    localStorage.setItem('feedback-comments', JSON.stringify(comments));
     
     // Show thank you message
     setShowCommentForm(false);

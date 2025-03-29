@@ -1,0 +1,29 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "words": [
+    "VITE",
+    "fixitquick",
+    "retryable",
+    "Retryable",
+    "Mintah",
+    "codemintah",
+    "Wreifors",
+    "Qarg",
+    "lucide",
+    "tailwindcss",
+    "vite",
+    "generative",
+    "postmessage"
+  ],
+  "flagWords": [],
+  "ignorePaths": [
+    "node_modules/**",
+    "dist/**",
+    "build/**",
+    "coverage/**",
+    "*.min.*",
+    "package-lock.json",
+    "public/**"
+  ]
+}

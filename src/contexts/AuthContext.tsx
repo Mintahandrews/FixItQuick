@@ -1,22 +1,11 @@
 import { createContext, useState, useEffect, useContext } from 'react';
-import { 
-  getStorageItem, 
-  setStorageItem, 
-  removeStorageItem, 
-  STORAGE_KEYS,
-  encryptData,
-  decryptData
-} from '../utils/localStorage';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 
 interface User {
   id: string;
   username: string;
   email: string;
   dateJoined: number;
-}
-
-interface UserWithPassword extends User {
-  password: string;
 }
 
 interface AuthContextType {
@@ -26,50 +15,43 @@ interface AuthContextType {
   register: (username: string, email: string, password: string) => Promise<boolean>;
   logout: () => void;
   isAuthenticated: boolean;
-  updateUserProfile: (userUpdates: Partial<User>) => Promise<boolean>;
+  updateUserProfile: (updates: Partial<User>) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUser, setCurrentUser] = useLocalStorage<User | null>('fixitquick-user', null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [users, setUsers] = useLocalStorage<any[]>('fixitquick-users', []);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => !!currentUser);
 
-  // Load user data from localStorage on initial render
+  // Update authenticated status when currentUser changes
   useEffect(() => {
-    const savedUser = getStorageItem<User | null>(STORAGE_KEYS.USER, null);
-    if (savedUser) {
-      setCurrentUser(savedUser);
-      setIsAuthenticated(true);
-    }
-    setIsLoading(false);
-  }, []);
+    setIsAuthenticated(!!currentUser);
+  }, [currentUser]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      // In a real app, this would be an API call
-      // This is a simplified version using localStorage
-      const users = getStorageItem<UserWithPassword[]>(STORAGE_KEYS.USERS, []);
-      const user = users.find((u: UserWithPassword) => 
-        u.email.toLowerCase() === email.toLowerCase()
+      // Find user with matching email and password
+      const user = users.find((u: any) => 
+        u.email.toLowerCase() === email.toLowerCase() && u.password === password
       );
       
-      if (user && decryptData(user.password) === password) {
-        const { password: _, ...userWithoutPassword } = user;
+      if (user) {
+        const { password, ...userWithoutPassword } = user;
         setCurrentUser(userWithoutPassword);
-        setIsAuthenticated(true);
-        setStorageItem(STORAGE_KEYS.USER, userWithoutPassword);
+        setIsLoading(false);
         return true;
       }
       
+      setIsLoading(false);
       return false;
     } catch (error) {
       console.error('Login error:', error);
-      return false;
-    } finally {
       setIsLoading(false);
+      return false;
     }
   };
 
@@ -77,71 +59,63 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setIsLoading(true);
     try {
       // Check if user already exists
-      const users = getStorageItem<UserWithPassword[]>(STORAGE_KEYS.USERS, []);
-      if (users.some((u) => u.email.toLowerCase() === email.toLowerCase())) {
+      if (users.some((u: any) => u.email.toLowerCase() === email.toLowerCase())) {
+        setIsLoading(false);
         return false;
       }
       
-      // Create new user with encrypted password
-      const newUser: UserWithPassword = {
+      // Create new user
+      const newUser = {
         id: `user_${Date.now()}`,
         username,
         email,
-        password: encryptData(password), // Simple encryption
+        password, // In a real app, this would be hashed
         dateJoined: Date.now()
       };
       
       // Save to users array
       const updatedUsers = [...users, newUser];
-      setStorageItem(STORAGE_KEYS.USERS, updatedUsers);
+      setUsers(updatedUsers);
       
       // Log user in
       const { password: _, ...userWithoutPassword } = newUser;
       setCurrentUser(userWithoutPassword);
-      setIsAuthenticated(true);
-      setStorageItem(STORAGE_KEYS.USER, userWithoutPassword);
       
+      setIsLoading(false);
       return true;
     } catch (error) {
       console.error('Registration error:', error);
-      return false;
-    } finally {
       setIsLoading(false);
+      return false;
+    }
+  };
+
+  const updateUserProfile = async (updates: Partial<User>): Promise<boolean> => {
+    try {
+      if (!currentUser) return false;
+      
+      // Update current user
+      const updatedUser = { ...currentUser, ...updates };
+      setCurrentUser(updatedUser);
+      
+      // Update user in users array
+      const updatedUsers = users.map(user => {
+        if (user.id === currentUser.id) {
+          return { ...user, ...updates };
+        }
+        return user;
+      });
+      
+      setUsers(updatedUsers);
+      return true;
+    } catch (error) {
+      console.error('Profile update error:', error);
+      return false;
     }
   };
 
   const logout = () => {
     setCurrentUser(null);
-    setIsAuthenticated(false);
-    removeStorageItem(STORAGE_KEYS.USER);
-  };
-
-  const updateUserProfile = async (userUpdates: Partial<User>): Promise<boolean> => {
-    try {
-      if (!currentUser) return false;
-
-      // Update current user state
-      const updatedUser = { ...currentUser, ...userUpdates };
-      setCurrentUser(updatedUser);
-      
-      // Update in localStorage
-      setStorageItem(STORAGE_KEYS.USER, updatedUser);
-      
-      // Update in users list too
-      const users = getStorageItem<UserWithPassword[]>(STORAGE_KEYS.USERS, []);
-      const updatedUsers = users.map(user => {
-        if (user.id === currentUser.id) {
-          return { ...user, ...userUpdates };
-        }
-        return user;
-      });
-      
-      setStorageItem(STORAGE_KEYS.USERS, updatedUsers);
-      return true;
-    } catch (error) {
-      console.error('Error updating user profile:', error);
-      return false;
-    }
   };
 
   return (

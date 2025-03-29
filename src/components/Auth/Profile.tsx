@@ -1,14 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, ChevronLeft, CircleAlert, LogOut, Save, Trash2, User } from 'lucide-react';
+import { Check, ChevronLeft, CircleAlert, LogOut, Save, User } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useBookmarks } from '../../hooks/useBookmarks';
-import { useRecentlyViewed } from '../../contexts/RecentlyViewedContext';
 
 export default function Profile() {
   const { currentUser, logout, updateUserProfile } = useAuth();
-  const { getBookmarkedSolutions, clearAllBookmarks } = useBookmarks();
-  const { clearRecentlyViewed } = useRecentlyViewed();
+  const { getBookmarkedSolutions } = useBookmarks();
   const bookmarks = getBookmarkedSolutions();
   const navigate = useNavigate();
   
@@ -50,19 +48,6 @@ export default function Profile() {
     } catch (err) {
       setError('Failed to update profile');
       console.error(err);
-    }
-  };
-  
-  const handleClearData = () => {
-    if (window.confirm('Are you sure you want to clear all your bookmarks and viewing history?')) {
-      clearAllBookmarks();
-      clearRecentlyViewed();
-      setSuccessMessage('All bookmarks and history cleared');
-      
-      // Clear success message after a few seconds
-      setTimeout(() => {
-        setSuccessMessage('');
-      }, 3000);
     }
   };
   
@@ -190,7 +175,7 @@ export default function Profile() {
                 <div className="flex justify-between items-center">
                   <span className="text-gray-700 dark:text-gray-300">Suggested Solutions</span>
                   <span className="text-blue-600 dark:text-blue-400 font-medium">
-                    {JSON.parse(localStorage.getItem('fixitquick-suggested-solutions') || '[]').filter((s: any) => 
+                    {JSON.parse(localStorage.getItem('suggested-solutions') || '[]').filter((s: any) => 
                       s.email === currentUser.email
                     ).length}
                   </span>
@@ -198,7 +183,13 @@ export default function Profile() {
                 <div className="flex justify-between items-center">
                   <span className="text-gray-700 dark:text-gray-300">Solution Feedback Given</span>
                   <span className="text-blue-600 dark:text-blue-400 font-medium">
-                    {Object.keys(JSON.parse(localStorage.getItem('fixitquick-feedback-comments') || '{}')).length}
+                    {Object.keys(JSON.parse(localStorage.getItem('feedback-comments') || '{}')).length}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-700 dark:text-gray-300">Chat Messages</span>
+                  <span className="text-blue-600 dark:text-blue-400 font-medium">
+                    {JSON.parse(localStorage.getItem('fixitquick-chat-history') || '[]').length}
                   </span>
                 </div>
               </div>
@@ -210,16 +201,6 @@ export default function Profile() {
                 >
                   View my bookmarks
                 </button>
-                
-                <div className="mt-4">
-                  <button
-                    onClick={handleClearData}
-                    className="flex items-center justify-center gap-2 w-full py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                  >
-                    <Trash2 size={16} />
-                    Clear bookmarks and history
-                  </button>
-                </div>
               </div>
             </div>
           </div>

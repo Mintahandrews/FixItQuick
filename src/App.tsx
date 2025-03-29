@@ -18,6 +18,7 @@ import { RecentlyViewedProvider } from './contexts/RecentlyViewedContext';
 import { FilterProvider } from './contexts/FilterContext';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
+import ChatBot from './components/ChatBot/ChatBot';
 
 export function App() {
   return (
@@ -63,6 +64,7 @@ export function App() {
                   />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
+                <ChatBot />
               </Layout>
             </Router>
           </FilterProvider>

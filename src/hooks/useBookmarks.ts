@@ -2,40 +2,23 @@ import { useState, useEffect } from 'react';
 import { BookmarkedSolution, Solution } from '../types';
 import { solutions } from '../data/solutions';
 import { useAuth } from '../contexts/AuthContext';
-import { getStorageItem, setStorageItem, STORAGE_KEYS } from '../utils/localStorage';
+import { useLocalStorage } from './useLocalStorage';
 
 export function useBookmarks() {
-  const [bookmarks, setBookmarks] = useState<BookmarkedSolution[]>([]);
   const { currentUser } = useAuth();
   const userId = currentUser?.id || 'anonymous';
+  const bookmarkKey = `bookmarks-${userId}`;
   
-  // Load bookmarks from localStorage on initial render
-  useEffect(() => {
-    const savedBookmarks = getStorageItem<BookmarkedSolution[]>(
-      STORAGE_KEYS.BOOKMARKS(userId), 
-      []
-    );
-    setBookmarks(savedBookmarks);
-  }, [userId]);
-  
-  // Save bookmarks to localStorage whenever they change
-  useEffect(() => {
-    setStorageItem(STORAGE_KEYS.BOOKMARKS(userId), bookmarks);
-  }, [bookmarks, userId]);
+  const [bookmarks, setBookmarks] = useLocalStorage<BookmarkedSolution[]>(bookmarkKey, []);
   
   const addBookmark = (solutionId: string) => {
     if (!bookmarks.some(bookmark => bookmark.id === solutionId)) {
-      setBookmarks(prevBookmarks => [
-        ...prevBookmarks, 
-        { id: solutionId, dateAdded: Date.now() }
-      ]);
+      setBookmarks([...bookmarks, { id: solutionId, dateAdded: Date.now() }]);
     }
   };
   
   const removeBookmark = (solutionId: string) => {
-    setBookmarks(prevBookmarks => 
-      prevBookmarks.filter(bookmark => bookmark.id !== solutionId)
-    );
+    setBookmarks(bookmarks.filter(bookmark => bookmark.id !== solutionId));
   };
   
   const isBookmarked = (solutionId: string) => {
@@ -53,16 +36,11 @@ export function useBookmarks() {
       });
   };
   
-  const clearAllBookmarks = () => {
-    setBookmarks([]);
-  };
-  
   return { 
     bookmarks, 
     addBookmark, 
     removeBookmark, 
     isBookmarked,
-    getBookmarkedSolutions,
-    clearAllBookmarks
+    getBookmarkedSolutions
   };
 }

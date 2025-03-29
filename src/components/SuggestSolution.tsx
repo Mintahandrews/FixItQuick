@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, ChevronLeft, PenLine, Send } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { setStorageItem, getStorageItem, STORAGE_KEYS } from '../utils/localStorage';
 
 interface FormData {
   title: string;
@@ -76,15 +75,14 @@ export default function SuggestSolution() {
     }
     
     // Store the suggestion in localStorage
-    const suggestions = getStorageItem<any[]>(STORAGE_KEYS.SUGGESTED_SOLUTIONS, []);
-    const newSuggestion = {
+    const suggestions = JSON.parse(localStorage.getItem('suggested-solutions') || '[]');
+    suggestions.push({
       ...formData,
       id: `suggestion-${Date.now()}`,
       userId: currentUser?.id || 'anonymous',
       dateSubmitted: new Date().toISOString()
-    };
-    
-    setStorageItem(STORAGE_KEYS.SUGGESTED_SOLUTIONS, [...suggestions, newSuggestion]);
+    });
+    localStorage.setItem('suggested-solutions', JSON.stringify(suggestions));
     
     // Show success message
     setSubmitted(true);

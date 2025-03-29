@@ -6,10 +6,12 @@ export default defineConfig({
   plugins: [
     react(),
     {
-      name: "error-reporter",
+      name: "fixit-quick",
 
       // ref: https://vite.dev/guide/api-plugin.html#transformindexhtml
       transformIndexHtml(html) {
+        return;
+
         return [
           {
             tag: "script",
@@ -68,7 +70,7 @@ export default defineConfig({
           return `
             ${src}
             if (process.env.NODE_ENV === 'development') {
-              // Report any vite-hmr errors
+              // Report any vite-hmr errors up to the parent app context
               // Full event list: https://vite.dev/guide/api-hmr.html
               if (import.meta.hot) {
                 import.meta.hot.on('vite:error', (data) => {
